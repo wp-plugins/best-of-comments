@@ -1,4 +1,4 @@
-=== Auto-Schedule Posts ===
+=== Best-Of Comments ===
 Contributors: davidjmillerorg
 Tags: comments, featured, highlight, classic
 Requires at least: 2.5
@@ -25,6 +25,9 @@ To install it simply unzip the file linked above and save it in your plugins dir
 2. This is the metabox on the edit comment page where a comment can be marked as featured or not (defaults to not featured).
 
 == Changelog ==
+
+= 0.9.1 =
+* Fixed a potential conflict in the name of a global variable.
 
 = 0.9 =
 * The basic functionality of being able to identify the best comments and display them is in place - version 1.0 will include an option to only display the "Best-Of" comments from the last X number of days where X is a number of your choosing.

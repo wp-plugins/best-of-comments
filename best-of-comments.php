@@ -4,11 +4,11 @@ Plugin Name: Best-Of Comments
 Plugin URI: http://www.davidjmiller.org/2009/best-of-comments/
 Description: This plugin will allow you to select comments to be identified and then randomly displayed or listed.
 Author: David Miller
-Version: 0.9
+Version: 0.9.1
 */ 
 
 /*
-Usage:  Call best_of_comments(); in order to return the featured comments.  You have the option of setting a limit on the amount of posts returned or a return limiter on the admin page. The admin page also allows you to specify an output template.
+Usage:  Call best_of_comments(); in order to return the featured comments.  You have the option of setting a limit on the amount of comments returned or a return limiter on the admin page. The admin page also allows you to specify an output template.
 
 Usage:  Call best_of_comment_get_list(); in order to return a list of links to the featured comments.
 You have the option of setting a limit on the number of comments returned by calling featured_comment_get_list(5); which will return a list of 5 random featured comments.
@@ -17,7 +17,7 @@ You have the option of setting a limit on the number of comments returned by cal
 load_plugin_textdomain('best_of_comments', 'wp-content/plugins/best-of-comments'); 
 
 /* You can change the name of the database column here */
-$cfg = 'featured';
+$boc_column = "featured";
 
 /* Upon activation run the install_best_of_comments function */
 register_activation_hook(__FILE__, 'install_best_of_comments');
@@ -33,10 +33,10 @@ add_action('edit_comment', 'best_of_comments_update');
 function install_best_of_comments()
 {
 	/* Import globals */
-	global $wpdb, $cfg;
+	global $wpdb, $boc_column;
 	
 	/* Check to see if column exists in the 'posts' table */
-	if ($wpdb->get_var("SHOW_COLUMNS FROM $wpdb->comments LIKE 'featured'") != $cfg)
+	if ($wpdb->get_var("SHOW_COLUMNS FROM $wpdb->comments LIKE 'featured'") != $boc_column)
 	{
 		/* If not then alter the table to add the column */
 		$wpdb->query("ALTER TABLE $wpdb->comments ADD featured VARCHAR(1) NOT NULL DEFAULT 'n'");
@@ -50,30 +50,30 @@ function best_of_comments_metabox() {
 /*This function populates the metabox*/
 function best_of_comments_function() {
 	/* Import globals */
-	global $wpdb, $cfg;
+	global $wpdb, $boc_column;
 
-	$status = $wpdb->get_var("SELECT ".$cfg." FROM $wpdb->comments WHERE comment_id='".$_GET["c"]."'");
+	$status = $wpdb->get_var("SELECT ".$boc_column." FROM $wpdb->comments WHERE comment_id='".$_GET["c"]."'");
 	?>
 	
-		<strong<?php if ($status == 'y') echo ' style="color:#0b4"'; ?>><?php _e('This is', 'best_of_comments') ?> <?php if ($status == 'n') _e('not ', 'best_of_comments');  _e('currently a featured comment', 'best_of_comments') ?>:</strong><br/>
-		<input type="radio" name="feature" id="feature" value="y"<?php if ($status == "y") echo ' checked'; ?>><?php _e('Feature this comment', 'best_of_comments') ?></input>&nbsp;
-		<input type="radio" name="feature" id="feature" value="n"<?php if ($status == "n") echo ' checked'; ?>><?php _e('Do not feature this comment', 'best_of_comments') ?></input>
+		<strong<?php if ($status == 'y') echo ' style="color:#0b4"'; ?>>This is <?php if ($status == 'n') {	?>not <?php } ?>currently a featured comment:</strong><br/>
+		<input type="radio" name="feature" id="feature" value="y"<?php if ($status == "y") echo ' checked'; ?>><?php _e('Feature this comment', 'featured_comments') ?></input>&nbsp;
+		<input type="radio" name="feature" id="feature" value="n"<?php if ($status == "n") echo ' checked'; ?>><?php _e('Do not feature this comment', 'featured_comments') ?></input>
 	<?php
 }
 
 /* Do this when editing a comment */
 function best_of_comments_update($id) {
 	
-	global $wpdb, $cfg;
-	$wpdb->query("UPDATE $wpdb->comments SET ".$cfg." = '".$_POST['feature']."' WHERE comment_ID='".$id."'");
+	global $wpdb, $boc_column;
+	$wpdb->query("UPDATE $wpdb->comments SET ".$boc_column." = '".$_POST['feature']."' WHERE comment_ID='".$id."'");
 	
 }
 
-/* This is where we get/return the featured comments */
+/* This is where we get/return the best-of comments */
 function best_of_comments()
 {
 	/* Import globals */
-	global $wpdb, $cfg;
+	global $wpdb, $boc_column;
 	
 	$options = get_option(basename(__FILE__, ".php"));
 	$limit = $options['limit'];
@@ -86,18 +86,17 @@ function best_of_comments()
 	$output_template = stripslashes($options['output_template']);
 	// an empty output_template makes no sense so we fall back to the default
 	if ($output_template == '') $output_template = '<li>{author}<br/>{comment}</li>';
-
 	/* Start the SQL string */
-	$sql = "SELECT * FROM $wpdb->comments WHERE ".$cfg." = 'y' ORDER BY RAND()";
+	$sql = "SELECT * FROM $wpdb->comments WHERE $boc_column = 'y' ORDER BY RAND()";
 	
 	/* Check to see if there will be a limit */
 	if ($limit > 0)
 		$sql .= " LIMIT $limit";
 	
-	/* Get the posts */
+	/* Get the comments */
 	$results = $wpdb->get_results($sql);
 	
-	/* Check to see if there are any posts returned */
+	/* Check to see if there are any comments returned */
 	if ($results)
 	{
 		$output = $prefix;
@@ -142,7 +141,7 @@ function best_of_comments()
 		}
 		$output .= $suffix;
 	} else {
-		$output = $none_text;
+		$output = $none_text;//.'<br/>'.$boc_column.'<br/>'.$sql;
 	}
 	echo $output;
 }
@@ -151,7 +150,7 @@ function best_of_comments()
 function best_of_comment_get_list($limit = 0)
 {
 	/* Import globals */
-	global $wpdb, $cfg;
+	global $wpdb, $boc_column;
 	
 	$options = get_option(basename(__FILE__, ".php"));
 	$limit = $options['limit'];
@@ -166,7 +165,7 @@ function best_of_comment_get_list($limit = 0)
 	if ($output_template == '') $output_template = '<li>{author}<br/>{comment}</li>';
 
 	/* Start the SQL string */
-	$sql = "SELECT * FROM $wpdb->comments WHERE ".$cfg." = 'y' ORDER BY RAND()";
+	$sql = "SELECT * FROM $wpdb->comments WHERE ".$boc_column." = 'y' ORDER BY RAND()";
 	
 	/* Check to see if there will be a limit */
 	if ($limit > 0)
