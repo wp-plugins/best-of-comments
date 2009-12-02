@@ -1,4 +1,4 @@
-=== Auto-Schedule Posts ===
+=== Best-Of Comments ===
 Contributors: davidjmillerorg
 Tags: comments, featured, highlight, classic
 Requires at least: 2.5
