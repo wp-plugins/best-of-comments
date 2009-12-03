@@ -10,8 +10,8 @@ Version: 0.9.1
 /*
 Usage:  Call best_of_comments(); in order to return the featured comments.  You have the option of setting a limit on the amount of comments returned or a return limiter on the admin page. The admin page also allows you to specify an output template.
 
-Usage:  Call best_of_comment_get_list(); in order to return a list of links to the featured comments.
-You have the option of setting a limit on the number of comments returned by calling featured_comment_get_list(5); which will return a list of 5 random featured comments.
+Usage:  Call best_of_comments_get_list(); in order to return a list of links to the featured comments.
+You have the option of setting a limit on the number of comments returned by calling best_of_comments_get_list(5); which will return a list of 5 random featured comments.
 */
 
 load_plugin_textdomain('best_of_comments', 'wp-content/plugins/best-of-comments'); 
