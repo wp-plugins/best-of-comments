@@ -8,13 +8,13 @@ Stable tag: trunk
 Best-Of Comments allows users to tag exceptional comments and display a randomly selected list of those comments wherever they choose in their theme.
 
 == Description ==
-Best-Of Comments allows anyone with the ability to edit comments to mark a comment as “featured” and then featured comments will be randomly selected and displayed anywhere you choose to place the php call to featured_comments().
+Best-Of Comments allows anyone with the ability to edit comments to mark a comment as “featured” and then featured comments will be randomly selected and displayed anywhere you choose to place the php call to best_of_comments().
 
 You can select how comments are displayed, how many to display, and how much of a comment to display (if comments are longer than the specified word length they contain a link back to the original comment). In the future you will have the ability to limit how far in the past to look for featured comments.
 
 == Installation ==
 
-To install it simply unzip the file linked above and save it in your plugins directory under wp-content. In the plugin manager activate the plugin. Settings for the plugin may be altered under the Auto-Schedule Posts page of the Settings menu.
+To install it simply unzip the file linked above and save it in your plugins directory under wp-content. In the plugin manager activate the plugin. Settings for the plugin may be altered under the Best-Of Comments page of the Settings menu.
 
 == Frequently Asked Questions ==
 
