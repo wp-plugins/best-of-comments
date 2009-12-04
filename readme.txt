@@ -2,7 +2,7 @@
 Contributors: davidjmillerorg
 Tags: comments, featured, highlight, classic
 Requires at least: 2.5
-Tested up to: 2.8.5
+Tested up to: 2.8.6
 Stable tag: trunk
 
 Best-Of Comments allows users to tag exceptional comments and display a randomly selected list of those comments wherever they choose in their theme.
@@ -25,6 +25,9 @@ To install it simply unzip the file linked above and save it in your plugins dir
 2. This is the metabox on the edit comment page where a comment can be marked as featured or not (defaults to not featured).
 
 == Changelog ==
+
+= 1.0 =
+* Added the ability to set a variable limiting the display to only include selected comments from the last X days (as promised in versino 0.9)
 
 = 0.9.1 =
 * Fixed a potential conflict in the name of a global variable.

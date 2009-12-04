@@ -4,13 +4,13 @@ Plugin Name: Best-Of Comments
 Plugin URI: http://www.davidjmiller.org/2009/best-of-comments/
 Description: This plugin will allow you to select comments to be identified and then randomly displayed or listed.
 Author: David Miller
-Version: 0.9.1
-*/ 
+Version: 1.0
+*/
 
 /*
 Usage:  Call best_of_comments(); in order to return the featured comments.  You have the option of setting a limit on the amount of comments returned or a return limiter on the admin page. The admin page also allows you to specify an output template.
 
-Usage:  Call best_of_comments_get_list(); in order to return a list of links to the featured comments.
+Usage:  Call best_of_comment_get_list(); in order to return a list of links to the featured comments.
 You have the option of setting a limit on the number of comments returned by calling best_of_comments_get_list(5); which will return a list of 5 random featured comments.
 */
 
@@ -77,6 +77,7 @@ function best_of_comments()
 	
 	$options = get_option(basename(__FILE__, ".php"));
 	$limit = $options['limit'];
+	$age = $options['age'];
 	$limitContent = $options['length'];
 	$useMoreText = $options['extend'];
 	$none_text = stripslashes($options['none_text']);
@@ -87,8 +88,14 @@ function best_of_comments()
 	// an empty output_template makes no sense so we fall back to the default
 	if ($output_template == '') $output_template = '<li>{author}<br/>{comment}</li>';
 	/* Start the SQL string */
-	$sql = "SELECT * FROM $wpdb->comments WHERE $boc_column = 'y' ORDER BY RAND()";
+	$sql = "SELECT * FROM $wpdb->comments WHERE $boc_column = 'y'";
 	
+	/* Check to see if there is an age limit */
+	if ($age > 0)
+		$sql .= " and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-$age,date("Y")))."'";
+
+	$sql .= " ORDER BY RAND()";
+
 	/* Check to see if there will be a limit */
 	if ($limit > 0)
 		$sql .= " LIMIT $limit";
@@ -154,6 +161,7 @@ function best_of_comment_get_list($limit = 0)
 	
 	$options = get_option(basename(__FILE__, ".php"));
 	$limit = $options['limit'];
+	$age = $options['age'];
 	$limitContent = $options['length'];
 	$useMoreText = $options['extend'];
 	$none_text = stripslashes($options['none_text']);
@@ -165,8 +173,14 @@ function best_of_comment_get_list($limit = 0)
 	if ($output_template == '') $output_template = '<li>{author}<br/>{comment}</li>';
 
 	/* Start the SQL string */
-	$sql = "SELECT * FROM $wpdb->comments WHERE ".$boc_column." = 'y' ORDER BY RAND()";
+	$sql = "SELECT * FROM $wpdb->comments WHERE ".$boc_column." = 'y'";
 	
+	/* Check to see if there is an age limit */
+	if ($age > 0)
+		$sql .= " and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-$age,date("Y")))."'";
+
+	$sql .= " ORDER BY RAND()";
+
 	/* Check to see if there will be a limit */
 	if ($limit > 0)
 		$sql .= " LIMIT $limit";
@@ -225,6 +239,7 @@ add_action('admin_menu', 'best_of_comments_option_menu');
 // Prepare the default set of options
 $default_options['limit'] = 1;
 $default_options['length'] = 50;
+$default_options['age'] = 0;
 $default_options['extend'] = 'More';
 $default_options['none_text'] = '';
 $default_options['prefix'] = '<ul>';
@@ -236,12 +251,13 @@ add_option(basename(__FILE__, ".php"), $default_options, 'options for the Best-O
 
 // This method displays, stores and updates all the options
 function best_of_comments_options_page(){
-	global $wpdb;
+	global $wpdb, $boc_column;
 	// This bit stores any updated values when the Update button has been pressed
 	if (isset($_POST['update_options'])) {
 		// Fill up the options array as necessary
 		$options['limit'] = $_POST['limit'];
 		$options['length'] = $_POST['length'];
+		$options['age'] = $_POST['age'];
 		$options['extend'] = $_POST['extend'];
 		$options['none_text'] = $_POST['none_text'];
 		$options['prefix'] = $_POST['prefix'];
@@ -258,6 +274,36 @@ function best_of_comments_options_page(){
 		// If we are just displaying the page we first load up the options array
 		$options = get_option(basename(__FILE__, ".php"));
 	}
+	/* Start the SQL string */
+	$sql_all = "SELECT count(*) num FROM $wpdb->comments WHERE ".$boc_column." = 'y'";
+	$sql_now = "SELECT count(*) num FROM $wpdb->comments WHERE ".$boc_column." = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-$options['age'],date("Y")))."'";
+	$sql_30 = "SELECT count(*) num FROM $wpdb->comments WHERE ".$boc_column." = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-30,date("Y")))."'";
+	$sql_90 = "SELECT count(*) num FROM $wpdb->comments WHERE ".$boc_column." = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-90,date("Y")))."'";
+	$sql_365 = "SELECT count(*) num FROM $wpdb->comments WHERE ".$boc_column." = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-365,date("Y")))."'";
+	
+	/* Get the counts */
+	$results_all = $wpdb->get_results($sql_all);
+	$results_now = $wpdb->get_results($sql_now);
+	$results_30 = $wpdb->get_results($sql_30);
+	$results_90 = $wpdb->get_results($sql_90);
+	$results_365 = $wpdb->get_results($sql_365);
+	/* Gather the comment counts returned */
+	if ($results_all) {
+		foreach($results_all as $res_all) { $c_all = $res_all->num; }
+	}
+	if ($results_now) {
+		foreach($results_now as $res_now) { $c_now = $res_now->num; }
+	}
+	if ($results_30) {
+		foreach($results_30 as $res_30) { $c_30 = $res_30->num; }
+	}
+	if ($results_90) {
+		foreach($results_90 as $res_90) { $c_90 = $res_90->num; }
+	}
+	if ($results_365) {
+		foreach($results_365 as $res_365) { $c_365 = $res_365->num; }
+	}
+	if ($options['age'] < 1) { $c_now = $c_all; }
 	//now we drop into html to display the option page form
 	?>
 		<div class="wrap">
@@ -273,6 +319,10 @@ function best_of_comments_options_page(){
 			<tr valign="top">
 				<th scope="row" align="right"><?php _e('Max words to show', 'best_of_comments') ?>:</th>
 				<td colspan="2"><input name="length" type="text" id="length" value="<?php echo $options['length']; ?>" size="3" /></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row" align="right"><?php _e('Oldest comments to show (in days)', 'best_of_comments') ?>:</th>
+				<td colspan="2"><input name="age" type="text" id="age" value="<?php echo $options['age']; ?>" size="3" /> (<?php _e('Set to 0 for no restrictions', 'best_of_comments') ?>)</td>
 			</tr>
 			<tr valign="top">
 
@@ -305,7 +355,25 @@ function best_of_comments_options_page(){
 		<div class="submit">
 			<input type="submit" name="update_options" value="<?php _e('Update', 'best_of_comments') ?>"  style="font-weight:bold;" />
 		</div>
-		</form>    		
+		</form>
+		<table text-align="center">
+			<tr>
+				<th width="35%"><?php _e('Selected Comments from the last', 'best_of_comments') ?>:</th>
+				<th align="center" width="17%"><?php _e('current setting', 'best_of_comments') ?></th>
+				<td align="center" width="12%">30 <?php _e('days', 'best_of_comments') ?></th>
+				<td align="center" width="12%">90 <?php _e('days', 'best_of_comments') ?></th>
+				<td align="center" width="12%">1 <?php _e('year', 'best_of_comments') ?></th>
+				<td align="center" width="12%"><?php _e('ever', 'best_of_comments') ?></th>
+			</tr>
+			<tr>
+				<td></td>
+				<td align="center" style="color:#0b4;background:#f9f9f9"><strong><?php echo $c_now; ?></strong></td>
+				<td align="center"><?php echo $c_30; ?></td>
+				<td align="center"><?php echo $c_90; ?></td>
+				<td align="center"><?php echo $c_365; ?></td>
+				<td align="center"><?php echo $c_all; ?></td>
+			</tr>
+		</table>
 	</div>
 	<?php	
 }
