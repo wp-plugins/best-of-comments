@@ -27,7 +27,7 @@ To install it simply unzip the file linked above and save it in your plugins dir
 == Changelog ==
 
 = 1.0 =
-* Added the ability to set a variable limiting the display to only include selected comments from the last X days (as promised in versino 0.9)
+* Added the ability to set a variable limiting the display to only include selected comments from the last X days (as promised in version 0.9)
 
 = 0.9.1 =
 * Fixed a potential conflict in the name of a global variable.
