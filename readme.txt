@@ -26,6 +26,9 @@ To install it simply unzip the file linked above and save it in your plugins dir
 
 == Changelog ==
 
+= 1.1 =
+* Removed an unnecessary variable reference and made the labels function as buttons when selecting comments to feature.
+
 = 1.0 =
 * Added the ability to set a variable limiting the display to only include selected comments from the last X days (as promised in version 0.9)
 

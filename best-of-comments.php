@@ -4,7 +4,7 @@ Plugin Name: Best-Of Comments
 Plugin URI: http://www.davidjmiller.org/2009/best-of-comments/
 Description: This plugin will allow you to select comments to be identified and then randomly displayed or listed.
 Author: David Miller
-Version: 1.0
+Version: 1.1
 */
 
 /*
@@ -15,9 +15,6 @@ You have the option of setting a limit on the number of comments returned by cal
 */
 
 load_plugin_textdomain('best_of_comments', 'wp-content/plugins/best-of-comments'); 
-
-/* You can change the name of the database column here */
-$boc_column = "featured";
 
 /* Upon activation run the install_best_of_comments function */
 register_activation_hook(__FILE__, 'install_best_of_comments');
@@ -33,10 +30,10 @@ add_action('edit_comment', 'best_of_comments_update');
 function install_best_of_comments()
 {
 	/* Import globals */
-	global $wpdb, $boc_column;
+	global $wpdb;
 	
 	/* Check to see if column exists in the 'posts' table */
-	if ($wpdb->get_var("SHOW_COLUMNS FROM $wpdb->comments LIKE 'featured'") != $boc_column)
+	if ($wpdb->get_var("SHOW_COLUMNS FROM $wpdb->comments LIKE 'featured'") != 'featured')
 	{
 		/* If not then alter the table to add the column */
 		$wpdb->query("ALTER TABLE $wpdb->comments ADD featured VARCHAR(1) NOT NULL DEFAULT 'n'");
@@ -50,22 +47,22 @@ function best_of_comments_metabox() {
 /*This function populates the metabox*/
 function best_of_comments_function() {
 	/* Import globals */
-	global $wpdb, $boc_column;
+	global $wpdb;
 
-	$status = $wpdb->get_var("SELECT ".$boc_column." FROM $wpdb->comments WHERE comment_id='".$_GET["c"]."'");
+	$status = $wpdb->get_var("SELECT featured FROM $wpdb->comments WHERE comment_id='".$_GET["c"]."'");
 	?>
 	
 		<strong<?php if ($status == 'y') echo ' style="color:#0b4"'; ?>>This is <?php if ($status == 'n') {	?>not <?php } ?>currently a featured comment:</strong><br/>
-		<input type="radio" name="feature" id="feature" value="y"<?php if ($status == "y") echo ' checked'; ?>><?php _e('Feature this comment', 'featured_comments') ?></input>&nbsp;
-		<input type="radio" name="feature" id="feature" value="n"<?php if ($status == "n") echo ' checked'; ?>><?php _e('Do not feature this comment', 'featured_comments') ?></input>
+		<label><input type="radio" name="feature" id="feature" value="y"<?php if ($status == "y") echo ' checked'; ?>><?php _e('Feature this comment', 'featured_comments') ?></label>&nbsp;
+		<label><input type="radio" name="feature" id="feature" value="n"<?php if ($status == "n") echo ' checked'; ?>><?php _e('Do not feature this comment', 'featured_comments') ?></label>
 	<?php
 }
 
 /* Do this when editing a comment */
 function best_of_comments_update($id) {
 	
-	global $wpdb, $boc_column;
-	$wpdb->query("UPDATE $wpdb->comments SET ".$boc_column." = '".$_POST['feature']."' WHERE comment_ID='".$id."'");
+	global $wpdb;
+	$wpdb->query("UPDATE $wpdb->comments SET featured = '".$_POST['feature']."' WHERE comment_ID='".$id."'");
 	
 }
 
@@ -73,7 +70,7 @@ function best_of_comments_update($id) {
 function best_of_comments()
 {
 	/* Import globals */
-	global $wpdb, $boc_column;
+	global $wpdb;
 	
 	$options = get_option(basename(__FILE__, ".php"));
 	$limit = $options['limit'];
@@ -88,7 +85,7 @@ function best_of_comments()
 	// an empty output_template makes no sense so we fall back to the default
 	if ($output_template == '') $output_template = '<li>{author}<br/>{comment}</li>';
 	/* Start the SQL string */
-	$sql = "SELECT * FROM $wpdb->comments WHERE $boc_column = 'y'";
+	$sql = "SELECT * FROM $wpdb->comments WHERE featured = 'y'";
 	
 	/* Check to see if there is an age limit */
 	if ($age > 0)
@@ -148,7 +145,7 @@ function best_of_comments()
 		}
 		$output .= $suffix;
 	} else {
-		$output = $none_text;//.'<br/>'.$boc_column.'<br/>'.$sql;
+		$output = $none_text;//.'<br/>'.$sql;
 	}
 	echo $output;
 }
@@ -157,7 +154,7 @@ function best_of_comments()
 function best_of_comment_get_list($limit = 0)
 {
 	/* Import globals */
-	global $wpdb, $boc_column;
+	global $wpdb;
 	
 	$options = get_option(basename(__FILE__, ".php"));
 	$limit = $options['limit'];
@@ -173,7 +170,7 @@ function best_of_comment_get_list($limit = 0)
 	if ($output_template == '') $output_template = '<li>{author}<br/>{comment}</li>';
 
 	/* Start the SQL string */
-	$sql = "SELECT * FROM $wpdb->comments WHERE ".$boc_column." = 'y'";
+	$sql = "SELECT * FROM $wpdb->comments WHERE featured = 'y'";
 	
 	/* Check to see if there is an age limit */
 	if ($age > 0)
@@ -251,7 +248,7 @@ add_option(basename(__FILE__, ".php"), $default_options, 'options for the Best-O
 
 // This method displays, stores and updates all the options
 function best_of_comments_options_page(){
-	global $wpdb, $boc_column;
+	global $wpdb;
 	// This bit stores any updated values when the Update button has been pressed
 	if (isset($_POST['update_options'])) {
 		// Fill up the options array as necessary
@@ -275,11 +272,11 @@ function best_of_comments_options_page(){
 		$options = get_option(basename(__FILE__, ".php"));
 	}
 	/* Start the SQL string */
-	$sql_all = "SELECT count(*) num FROM $wpdb->comments WHERE ".$boc_column." = 'y'";
-	$sql_now = "SELECT count(*) num FROM $wpdb->comments WHERE ".$boc_column." = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-$options['age'],date("Y")))."'";
-	$sql_30 = "SELECT count(*) num FROM $wpdb->comments WHERE ".$boc_column." = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-30,date("Y")))."'";
-	$sql_90 = "SELECT count(*) num FROM $wpdb->comments WHERE ".$boc_column." = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-90,date("Y")))."'";
-	$sql_365 = "SELECT count(*) num FROM $wpdb->comments WHERE ".$boc_column." = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-365,date("Y")))."'";
+	$sql_all = "SELECT count(*) num FROM $wpdb->comments WHERE featured = 'y'";
+	$sql_now = "SELECT count(*) num FROM $wpdb->comments WHERE featured = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-$options['age'],date("Y")))."'";
+	$sql_30 = "SELECT count(*) num FROM $wpdb->comments WHERE featured = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-30,date("Y")))."'";
+	$sql_90 = "SELECT count(*) num FROM $wpdb->comments WHERE featured = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-90,date("Y")))."'";
+	$sql_365 = "SELECT count(*) num FROM $wpdb->comments WHERE featured = 'y' and comment_date > '".date("Y-m-d G:i:s",mktime(0,0,0,date("m"),date("d")-365,date("Y")))."'";
 	
 	/* Get the counts */
 	$results_all = $wpdb->get_results($sql_all);
