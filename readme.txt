@@ -26,6 +26,9 @@ To install it simply unzip the file linked above and save it in your plugins dir
 
 == Changelog ==
 
+= 1.2 =
+* Discovered a function call that allowed other plugins that alter the content to possibly interfere with the display of featured comments.
+
 = 1.1 =
 * Removed an unnecessary variable reference and made the labels function as buttons when selecting comments to feature.
 

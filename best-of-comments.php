@@ -108,7 +108,7 @@ function best_of_comments()
 		foreach($results as $res)
 		{
 			$author = stripslashes($res->comment_author);
-			$comment = apply_filters('the_content', $res->comment_content);
+			$comment = stripslashes($res->comment_content);
 			$link = get_permalink($res->comment_post_ID).'#comment-'.$res->comment_ID;
 			/* This will handle the content that is displayed */
 			$new_post_cont = "";
@@ -193,7 +193,7 @@ function best_of_comment_get_list($limit = 0)
 		foreach($results as $res)
 		{
 			$author = stripslashes($res->comment_author);
-			$comment = apply_filters('the_content', $res->comment_content);
+			$comment = stripslashes($res->comment_content);
 			$link = get_permalink($res->comment_post_ID).'#comment-'.$res->comment_ID;
 			
 			/* Echo the returned results like a comment */
