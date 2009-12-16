@@ -4,7 +4,7 @@ Plugin Name: Best-Of Comments
 Plugin URI: http://www.davidjmiller.org/2009/best-of-comments/
 Description: This plugin will allow you to select comments to be identified and then randomly displayed or listed.
 Author: David Miller
-Version: 1.1
+Version: 1.2
 */
 
 /*
