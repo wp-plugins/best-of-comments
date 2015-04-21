@@ -2,7 +2,7 @@
 Contributors: davidjmillerorg
 Tags: comments, featured, highlight, classic
 Requires at least: 2.5
-Tested up to: 4.1.1
+Tested up to: 4.1.2
 Stable tag: trunk
 
 Best-Of Comments allows users to tag exceptional comments and display a randomly selected list of those comments wherever they choose in their theme.
